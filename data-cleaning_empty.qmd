@@ -3,7 +3,6 @@ title: "Data Cleaning"
 format: html
 ---
 
-
 ```{r}
 #| message: false  
 
@@ -19,7 +18,6 @@ species_file <- "ASDN_Daily_species.csv"
 
 snowsurvey_file <- "ASDN_Snow_survey.csv"
 ```
-
 
 ## Snow survey data
 
@@ -50,7 +48,8 @@ Let's focus on the non-numeric values as a starting point:
 
 ```{r}
 snowsurvey_csv %>%
-
+  count(Snow_cover) %>%
+  filter(is.na(as.numeric(Snow_cover))) # make na anything that cannot be transformed into numeric
 ```
 
 ### Data cleaning
@@ -79,7 +78,6 @@ Is he problem is similar with "-"?
 snowsurvey_csv 
 ```
 
-
 let's set it to NA:
 
 ```{r}
@@ -94,7 +92,6 @@ snowsurvey_fixed <-
 snowsurvey_csv %>%
   
 ```
-
 
 Same pattern, let's substitute with NA:
 
@@ -112,14 +109,13 @@ snowsurvey_csv %>%
   
 ```
 
-
 ```{r}
 snowsurvey_fixed <- 
 ```
 
 #### `<1` values
 
-Finally What should we replace"<1" with?
+Finally What should we replace"\<1" with?
 
 ```{r}
 
@@ -128,7 +124,6 @@ Finally What should we replace"<1" with?
 ```{r}
 
 ```
-
 
 ### Going numeric
 
@@ -146,8 +141,7 @@ Ok, we can do the transformation:
 snowsurvey_fixed <- 
 ```
 
-Yeah we have finally a numeric column 🎉. 
-
+Yeah we have finally a numeric column 🎉.
 
 ### Further cleaning
 
@@ -182,8 +176,7 @@ dir.create(datadir_processed, showWarnings = FALSE)
 write_csv(snowsurvey_fixed, file.path(datadir_processed, "snow_cover.csv"))
 ```
 
-<hr> 
-
+<hr>
 
 ## Species data
 
@@ -203,19 +196,17 @@ glimpse(species_csv)
 
 This data set is stored in a wide format where each species has its own column. This means that every time we discover a new species we will have to add a column. In addition, a bunch of `0` are stored in this table but do not really provide any information. According to the metadata:
 
-```
+```         
 The number of individuals seen is recorded for each species, except when individuals were not counted but the species was present (typically for very abundant species), an "X" is shown. The remaining columns list the full-name of species (birds and mammals) recorded for at least study site in at least one year.
 ```
 
 This data model is not convenient for a database, we will have to switch to a long format.
-
 
 ### Data cleaning
 
 ```{r}
 species_long <- 
 ```
-
 
 We want to focus on the presence and absence of species and not the count. Let's create a new column for presence where anything else than 0 is considered present
 
@@ -252,6 +243,3 @@ dir.create(datadir_processed, showWarnings = FALSE)
 # write the file
 write_csv(species_presence, file.path(datadir_processed, "species_presence.csv"))
 ```
-
-
-
