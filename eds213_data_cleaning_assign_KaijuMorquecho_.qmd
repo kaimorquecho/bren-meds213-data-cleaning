@@ -80,7 +80,7 @@ snowsurvey_fixed <- snowsurvey_fixed %>%
   mutate(Water_cover = as.numeric(Water_cover))
 ```
 
-Let's check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =< 100. 
+Let's check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =\< 100.
 
 ```{r}
 snowsurvey_fixed %>% 
@@ -91,7 +91,7 @@ snowsurvey_fixed %>%
 
 ```
 
-We have one value in Water_cover that is > 100 (it's 353). Let's make it an NA
+We have one value in Water_cover that is \> 100 (it's 353). Let's make it an NA
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>% 
@@ -125,7 +125,7 @@ snowsurvey_fixed <- snowsurvey_fixed %>%
   mutate(Land_cover = as.numeric(Land_cover))
 ```
 
-I did not see any values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =< 100. 
+I did not see any values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =\< 100.
 
 ```{r}
 snowsurvey_fixed %>% 
@@ -136,7 +136,7 @@ snowsurvey_fixed %>%
 
 ```
 
-We have two value in Land_cover that are < 0 (-100 and -298). Let's make them NA
+We have two value in Land_cover that are \< 0 (-100 and -298). Let's make them NA
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>% 
@@ -171,28 +171,129 @@ snowsurvey_fixed %>%
   filter(is.na(Total_cover)) %>%
   count() # 81 missing 
 ```
-Since Snow_cover, Land_cover, and Water_cover add up to Total_cover, we will use them to infer the missing values. 
 
+Since Snow_cover + Land_cover + Water_cover = Total_cover, we will use the columns to infer missing values. First, let's make sure Total_cover is numeric/doesn't have any problematic values.
 
+```{r}
+unique(snowsurvey_fixed$Total_cover)
+```
 
+We have to clean it up. Let's replace invalid entries with NAs.
 
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Total_cover = case_when(
+    Total_cover %in% c(".","n/a","-") ~ NA,
+    str_detect(Total_cover, "<row") ~ NA,
+    .default = Total_cover)
+    )
+```
 
+Let's check again.
 
+```{r}
+unique(snowsurvey_fixed$Total_cover)
+```
 
+All good now, but we have values \> 100. Let's convert to numeric and set these to NA.
 
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Total_cover = as.numeric(Total_cover)) %>% 
+  mutate(Total_cover = case_when(
+    Total_cover < 0 ~ NA, # checking for negative values as well
+    Total_cover > 100 ~ NA, 
+    .default = Total_cover))
+```
 
+Let's check if Total_cover is now ready for infering
 
+```{r}
+unique(snowsurvey_fixed$Total_cover)
 
+```
 
+It's ready! Now to infer ...
 
+```{r}
+snowsurvey_fixed %>%
+  filter(is.na(Snow_cover) & is.na(Water_cover) & is.na(Land_cover)) %>%
+  count() # 712 rows have no cover data, so we will not be able to infer those
 
+```
 
+We can only infer if at least 3 of the 4 "cover" columns have valid entries (aka are not NAs).
 
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(
+    # infer Snow_cover missing values
+    Snow_cover = ifelse( # use ifelse statements to ensure enough cols have values to infer from
+      is.na(Snow_cover) & !is.na(Water_cover) & !is.na(Land_cover) & !is.na(Total_cover),
+      Total_cover - Water_cover - Land_cover, # infer if other 3 cols are not empty
+      Snow_cover # leave value as is if conditions not met
+    ),
+    
+    # infer Land_cover missing values 
+    Land_cover = ifelse(
+      is.na(Land_cover) & !is.na(Water_cover) & !is.na(Snow_cover) & !is.na(Total_cover), 
+      Total_cover - Water_cover - Snow_cover,
+      Land_cover
+    ),
+    
+    # infer Water_cover missing values
+      Water_cover = ifelse(
+      is.na(Water_cover) & !is.na(Land_cover) & !is.na(Snow_cover) & !is.na(Total_cover), 
+      Total_cover - Land_cover - Snow_cover,
+      Water_cover
+    ), 
+       
+    # infer Water_cover missing values
+      Total_cover = ifelse(
+      is.na(Total_cover) & !is.na(Land_cover) & !is.na(Snow_cover) & !is.na(Water_cover), 
+      Water_cover + Land_cover + Snow_cover,
+      Total_cover
+    )
+  )
+  
+```
 
+Lastly, I'd like to check that we did not end up with 
+1) more missing columns than before we inferred and 
+2) we do not have any values > 100 in our columns of interest
 
+```{r}
+# did we create NAs? 
 
+snowsurvey_fixed %>%
+  filter(is.na(Snow_cover) & is.na(Water_cover) & is.na(Land_cover)) %>%
+  count() # 712 rows have no cover data, the number did not change after inference, that is good.
+```
 
+```{r}
+# do we have columns where percentage is >100? 
+snowsurvey_fixed %>%
+  filter(
+    Snow_cover > 100,
+    Water_cover > 100,
+    Land_cover > 100,
+    Total_cover > 100)
 
+```
 
+We do not have any entries > 100! 
+
+```{r}
+# do we have columns with negative numbers (<0)? 
+snowsurvey_fixed %>%
+  filter(
+    Snow_cover < 0,
+    Water_cover < 0,
+    Land_cover < 0,
+    Total_cover < 0)
+
+```
+
+We do not have any negative numbers either! 
 
 
