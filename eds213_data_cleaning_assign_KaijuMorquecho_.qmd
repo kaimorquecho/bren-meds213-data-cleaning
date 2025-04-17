@@ -5,6 +5,75 @@ date: 2025-04-16
 format: html
 theme: cyborg
 author: Kaiju Morquecho
-
 ---
+
+Let's load any necessary libraries and write file names
+
+```{r}
+library(tidyverse)
+
+# file names 
+datadir_raw <- "data/raw/"
+snowsurvey_file <- "ASDN_Snow_survey.csv"
+```
+
+Read in the Snow Survey data
+
+```{r message=FALSE}
+snowsurvey <- read_csv(file.path(datadir_raw, snowsurvey_file))
+```
+
+Use in-class code to clean the Snow_cover column
+
+```{r}
+snowsurvey_fixed <- snowsurvey %>%
+  mutate(
+    Snow_cover = case_when(
+      Snow_cover == "." ~ NA, 
+      Snow_cover == "-" ~ NA, 
+      Snow_cover == "n/a" ~ NA,
+      Snow_cover == "unk" ~ NA,
+      Snow_cover == "<1" ~ "0", 
+      .default = Snow_cover 
+    ),
+    Snow_cover = as.numeric(Snow_cover)
+  )
+```
+
+Take a look at snowsurvey_fixed's Snow_cover data type
+
+```{r}
+glimpse(snowsurvey_fixed) # we see that Snow_cover is <dbl> but Land and Water are still <chr>
+```
+
+Take a look at the Water_cover and Land_cover columns to identify problematic values
+
+```{r}
+# if we take a look at the unique values in snowsurvey_fixed we can see what values we must replace/clean before turning into numeric
+
+unique(snowsurvey_fixed$Water_cover) 
+unique(snowsurvey_fixed$Land_cover)
+```
+
+Replace the identified problematic values in Water_cover ('-','n/a','unk','.')
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Water_cover = case_when(
+    Water_cover %in% c(".","unk","-","n/a") ~ NA,
+    .default = Water_cover)
+  )
+```
+
+Let's check if our replacement worked correctly
+
+```{r}
+unique(snowsurvey_fixed$Water_cover)
+```
+
+It worked, now we only have numbers and NAs. I did not see any values greater than 100 but let's check just in case. The metadata (and logic) suggests checking percentage =< 100. 
+
+
+
+
 
