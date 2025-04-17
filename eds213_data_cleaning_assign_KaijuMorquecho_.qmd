@@ -151,6 +151,45 @@ glimpse(snowsurvey_fixed)
 
 Yay. Now all 3 x_cover columns are <dbl>s
 
+### Now that we have numeric columns, let's recompute and infer values for Total_cover
+
+```{r}
+# we will check each column for missing values  
+snowsurvey_fixed %>%
+  filter(is.na(Snow_cover)) %>%
+  count() # 796 missing 
+
+snowsurvey_fixed %>%
+  filter(is.na(Water_cover)) %>%
+  count() # 768 missing 
+
+snowsurvey_fixed %>%
+  filter(is.na(Land_cover)) %>%
+  count() # 774 missing 
+
+snowsurvey_fixed %>%
+  filter(is.na(Total_cover)) %>%
+  count() # 81 missing 
+```
+Since Snow_cover, Land_cover, and Water_cover add up to Total_cover, we will use them to infer the missing values. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
