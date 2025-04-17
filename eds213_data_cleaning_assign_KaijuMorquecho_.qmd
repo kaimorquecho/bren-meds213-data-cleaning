@@ -1,0 +1,10 @@
+---
+title: "EDS 213 Data Cleaning Assignment"
+subtitle: "Columns 'Water_cover' and 'Land_cover'"
+date: 2025-04-16
+format: html
+theme: cyborg
+author: Kaiju Morquecho
+
+---
+
