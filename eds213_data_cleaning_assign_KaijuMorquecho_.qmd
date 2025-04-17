@@ -68,10 +68,90 @@ snowsurvey_fixed <- snowsurvey_fixed %>%
 Let's check if our replacement worked correctly
 
 ```{r}
-unique(snowsurvey_fixed$Water_cover)
+snowsurvey_fixed %>% 
+  count(Water_cover) %>%
+  filter(is.na(as.numeric(Water_cover)))
 ```
 
-It worked, now we only have numbers and NAs. I did not see any values greater than 100 but let's check just in case. The metadata (and logic) suggests checking percentage =< 100. 
+It worked, now we only have numbers and NAs. Let's make the transformation
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Water_cover = as.numeric(Water_cover))
+```
+
+Let's check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =< 100. 
+
+```{r}
+snowsurvey_fixed %>% 
+  filter(Water_cover > 100) # more than 100?
+
+snowsurvey_fixed %>% 
+  filter(Water_cover < 0) # negative number? less than 0? 
+
+```
+
+We have one value in Water_cover that is > 100 (it's 353). Let's make it an NA
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover > 100, NA, Water_cover))
+```
+
+## Now let's repeat the steps for Land_cover
+
+Replace the identified problematic values in Later_cover ('-','n/a','unk','.')
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Land_cover = case_when(
+    Land_cover %in% c(".","unk","-","n/a") ~ NA,
+    .default = Land_cover)
+  )
+```
+
+Let's check if our replacement worked correctly
+
+```{r}
+snowsurvey_fixed %>% 
+  count(Land_cover) %>%
+  filter(is.na(as.numeric(Land_cover)))
+```
+
+It worked, now we only have numbers and NAs. Let's make the transformation
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>%
+  mutate(Land_cover = as.numeric(Land_cover))
+```
+
+I did not see any values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =< 100. 
+
+```{r}
+snowsurvey_fixed %>% 
+  filter(Land_cover > 100) # more than 100?
+
+snowsurvey_fixed %>% 
+  filter(Land_cover < 0) # negative number? less than 0? 
+
+```
+
+We have two value in Land_cover that are < 0 (-100 and -298). Let's make them NA
+
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Land_cover = ifelse(Land_cover < 0, NA, Land_cover))
+```
+
+Let's take one final look at Land_cover and Water_cover's data type
+
+```{r}
+glimpse(snowsurvey_fixed)
+```
+
+Yay. Now all 3 x_cover columns are <dbl>s
+
+
 
 
 
