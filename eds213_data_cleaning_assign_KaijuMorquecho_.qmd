@@ -13,6 +13,7 @@ Let's load any necessary libraries and write file names
 library(tidyverse)
 
 # file names 
+datadir_processed <- "data/processed/"
 datadir_raw <- "data/raw/"
 snowsurvey_file <- "ASDN_Snow_survey.csv"
 ```
@@ -38,9 +39,25 @@ snowsurvey_fixed <- snowsurvey %>%
     ),
     Snow_cover = as.numeric(Snow_cover)
   )
+
+# check for values > 100 
+snowsurvey_fixed %>% 
+  filter(Snow_cover > 100) 
+
+# and replace with NA
+
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Snow_cover = ifelse(Snow_cover > 100, NA, Snow_cover))
+
+# check for negative values:
+
+snowsurvey_fixed %>% 
+  filter(Snow_cover < 0) 
+
+# none, we can leave as is
 ```
 
-Take a look at snowsurvey_fixed's Snow_cover data type
+Take a look at snowsurvey_fixed's Snow_cover data type to make sure it looks good now(is numeric)
 
 ```{r}
 glimpse(snowsurvey_fixed) # we see that Snow_cover is <dbl> but Land and Water are still <chr>
@@ -80,7 +97,7 @@ snowsurvey_fixed <- snowsurvey_fixed %>%
   mutate(Water_cover = as.numeric(Water_cover))
 ```
 
-Let's check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =\< 100.
+Let's check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =< 100.
 
 ```{r}
 snowsurvey_fixed %>% 
@@ -91,16 +108,23 @@ snowsurvey_fixed %>%
 
 ```
 
-We have one value in Water_cover that is \> 100 (it's 353). Let's make it an NA
+We have one value in Water_cover that is > 100 (it's 353). No negative numbers! Let's make those > 100 = NA and check once more
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>% 
   mutate(Water_cover = ifelse(Water_cover > 100, NA, Water_cover))
+
+# recheck
+snowsurvey_fixed %>% 
+  filter(Water_cover > 100) # more than 100?
+
+# all good
 ```
+
 
 ## Now let's repeat the steps for Land_cover
 
-Replace the identified problematic values in Later_cover ('-','n/a','unk','.')
+Replace the identified problematic values in Land_cover ('-','n/a','unk','.')
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>%
@@ -136,7 +160,7 @@ snowsurvey_fixed %>%
 
 ```
 
-We have two value in Land_cover that are \< 0 (-100 and -298). Let's make them NA
+We have two values in Land_cover that are < 0 (-100 and -298). We have no >100 values. Let's make the negative values = NA
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>% 
@@ -149,7 +173,7 @@ Let's take one final look at Land_cover and Water_cover's data type
 glimpse(snowsurvey_fixed)
 ```
 
-Yay. Now all 3 x_cover columns are <dbl>s
+Yay. Now all 3 x_cover columns are numeric
 
 ### Now that we have numeric columns, let's recompute and infer values for Total_cover
 
@@ -157,7 +181,7 @@ Yay. Now all 3 x_cover columns are <dbl>s
 # we will check each column for missing values  
 snowsurvey_fixed %>%
   filter(is.na(Snow_cover)) %>%
-  count() # 796 missing 
+  count() # 798 missing 
 
 snowsurvey_fixed %>%
   filter(is.na(Water_cover)) %>%
@@ -195,7 +219,7 @@ Let's check again.
 unique(snowsurvey_fixed$Total_cover)
 ```
 
-All good now, but we have values \> 100. Let's convert to numeric and set these to NA.
+All good now, but we have values > 100. Let's convert to numeric and set these to NA.
 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>%
@@ -246,16 +270,14 @@ snowsurvey_fixed <- snowsurvey_fixed %>%
       is.na(Water_cover) & !is.na(Land_cover) & !is.na(Snow_cover) & !is.na(Total_cover), 
       Total_cover - Land_cover - Snow_cover,
       Water_cover
-    ), 
-       
-    # infer Water_cover missing values
+    ),
+    
       Total_cover = ifelse(
       is.na(Total_cover) & !is.na(Land_cover) & !is.na(Snow_cover) & !is.na(Water_cover), 
       Water_cover + Land_cover + Snow_cover,
       Total_cover
-    )
   )
-  
+  )
 ```
 
 Lastly, I'd like to check that we did not end up with 
@@ -274,26 +296,42 @@ snowsurvey_fixed %>%
 # do we have columns where percentage is >100? 
 snowsurvey_fixed %>%
   filter(
-    Snow_cover > 100,
-    Water_cover > 100,
-    Land_cover > 100,
+    Snow_cover > 100 |
+    Water_cover > 100 |
+    Land_cover > 100 |
     Total_cover > 100)
 
 ```
 
-We do not have any entries > 100! 
+We have 21 rows where Total_cover > 100! These values are not reliable. Let's set these to NA
+```{r}
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Total_cover = ifelse(Total_cover > 100, NA, Total_cover))
+```
+
+What about negative numbers? 
 
 ```{r}
 # do we have columns with negative numbers (<0)? 
 snowsurvey_fixed %>%
   filter(
-    Snow_cover < 0,
-    Water_cover < 0,
-    Land_cover < 0,
+    Snow_cover < 0 |
+    Water_cover < 0 |
+    Land_cover < 0 |
     Total_cover < 0)
+
+# No! all good.
 
 ```
 
-We do not have any negative numbers either! 
+We do not have any negative numbers either! Let's write our snowcover_fixed to a csv file
+
+```{r}
+# check if the folder exists
+dir.create(datadir_processed, showWarnings = FALSE)
+
+# write the file
+write_csv(snowsurvey_fixed, file.path(datadir_processed, "snow_cover.csv"))
+```
 
 

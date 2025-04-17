@@ -127,8 +127,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># file names </span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>datadir_raw <span class="ot">&lt;-</span> <span class="st">"data/raw/"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>snowsurvey_file <span class="ot">&lt;-</span> <span class="st">"ASDN_Snow_survey.csv"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>datadir_processed <span class="ot">&lt;-</span> <span class="st">"data/processed/"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>datadir_raw <span class="ot">&lt;-</span> <span class="st">"data/raw/"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>snowsurvey_file <span class="ot">&lt;-</span> <span class="st">"ASDN_Snow_survey.csv"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Read in the Snow Survey data</p>
 <div class="cell">
@@ -147,11 +148,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> Snow_cover </span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Snow_cover =</span> <span class="fu">as.numeric</span>(Snow_cover)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># check for values &gt; 100 </span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Snow_cover <span class="sc">&gt;</span> <span class="dv">100</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 11
+  Site   Year Date  Plot  Location Snow_cover Water_cover Land_cover Total_cover
+  &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;      &lt;chr&gt;      
+1 barr   2011 31-M… brw3  d10             200 0           -100       100        
+2 barr   2007 5-Ju… brw1  j6              470 0           0          470        
+# ℹ 2 more variables: Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
-<p>Take a look at snowsurvey_fixed’s Snow_cover data type</p>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># and replace with NA</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Snow_cover =</span> <span class="fu">ifelse</span>(Snow_cover <span class="sc">&gt;</span> <span class="dv">100</span>, <span class="cn">NA</span>, Snow_cover))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># check for negative values:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Snow_cover <span class="sc">&lt;</span> <span class="dv">0</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 11
+# ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
+#   Location &lt;chr&gt;, Snow_cover &lt;dbl&gt;, Water_cover &lt;chr&gt;, Land_cover &lt;chr&gt;,
+#   Total_cover &lt;chr&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># none, we can leave as is</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Take a look at snowsurvey_fixed’s Snow_cover data type to make sure it looks good now(is numeric)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(snowsurvey_fixed) <span class="co"># we see that Snow_cover is &lt;dbl&gt; but Land and Water are still &lt;chr&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(snowsurvey_fixed) <span class="co"># we see that Snow_cover is &lt;dbl&gt; but Land and Water are still &lt;chr&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 42,830
 Columns: 11
@@ -170,9 +199,9 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>Take a look at the Water_cover and Land_cover columns to identify problematic values</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if we take a look at the unique values in snowsurvey_fixed we can see what values we must replace/clean before turning into numeric</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Water_cover) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if we take a look at the unique values in snowsurvey_fixed we can see what values we must replace/clean before turning into numeric</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Water_cover) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "0"     "10"    "5"     "15"    "25"    NA      "20"    "30"    "40"   
 [10] "35"    "50"    "65"    "60"    "75"    "85"    "45"    "70"    "90"   
@@ -184,7 +213,7 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 [64] "33.25" "48.5"  "17"    "47.25" "18.75" "16.25" "27.5"  "1.75"  "8.75" 
 [73] "6.25"  "44"    "9"     "12"    "82"    "83"    "84"   </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Land_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Land_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  [1] "10"    "0"     "5"     "20"    "15"    "30"    "50"    "70"    "60"   
  [10] "40"    "55"    "80"    "75"    "35"    "25"    "65"    "45"    NA     
@@ -202,17 +231,17 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>Replace the identified problematic values in Water_cover (‘-’,‘n/a’,‘unk’,‘.’)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">case_when</span>(</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"unk"</span>,<span class="st">"-"</span>,<span class="st">"n/a"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Water_cover)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">case_when</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"unk"</span>,<span class="st">"-"</span>,<span class="st">"n/a"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Water_cover)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check if our replacement worked correctly</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Water_cover) <span class="sc">%&gt;%</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(Water_cover)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Water_cover) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(Water_cover)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 2
   Water_cover     n
@@ -222,13 +251,13 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>It worked, now we only have numbers and NAs. Let’s make the transformation</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">as.numeric</span>(Water_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">as.numeric</span>(Water_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check for values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =&lt; 100.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="co"># more than 100?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="co"># more than 100?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 11
   Site   Year Date  Plot  Location Snow_cover Water_cover Land_cover Total_cover
@@ -236,8 +265,8 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 1 barr   2011 8-Ju… brw5  l4               45         353 -298       100        
 # ℹ 2 more variables: Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Water_cover <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="co"># negative number? less than 0? </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Water_cover <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="co"># negative number? less than 0? </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 0 × 11
 # ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
@@ -245,26 +274,37 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 #   Total_cover &lt;chr&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p>We have one value in Water_cover that is &gt; 100 (it’s 353). Let’s make it an NA</p>
+<p>We have one value in Water_cover that is &gt; 100 (it’s 353). No negative numbers! Let’s make those &gt; 100 = NA and check once more</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">ifelse</span>(Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>, <span class="cn">NA</span>, Water_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Water_cover =</span> <span class="fu">ifelse</span>(Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>, <span class="cn">NA</span>, Water_cover))</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># recheck</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="co"># more than 100?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 11
+# ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
+#   Location &lt;chr&gt;, Snow_cover &lt;dbl&gt;, Water_cover &lt;dbl&gt;, Land_cover &lt;chr&gt;,
+#   Total_cover &lt;chr&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># all good</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="now-lets-repeat-the-steps-for-land_cover" class="level2">
 <h2 class="anchored" data-anchor-id="now-lets-repeat-the-steps-for-land_cover">Now let’s repeat the steps for Land_cover</h2>
-<p>Replace the identified problematic values in Later_cover (‘-’,‘n/a’,‘unk’,‘.’)</p>
+<p>Replace the identified problematic values in Land_cover (‘-’,‘n/a’,‘unk’,‘.’)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">case_when</span>(</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"unk"</span>,<span class="st">"-"</span>,<span class="st">"n/a"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Land_cover)</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">case_when</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"unk"</span>,<span class="st">"-"</span>,<span class="st">"n/a"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Land_cover)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check if our replacement worked correctly</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Land_cover) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(Land_cover)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Land_cover) <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(Land_cover)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 2
   Land_cover     n
@@ -274,38 +314,38 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>It worked, now we only have numbers and NAs. Let’s make the transformation</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">as.numeric</span>(Land_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">as.numeric</span>(Land_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>I did not see any values greater than 100 or less than 0. The metadata (and logic) suggests checking percentage =&lt; 100.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Land_cover <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="co"># more than 100?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Land_cover <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="co"># more than 100?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 0 × 11
 # ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
 #   Location &lt;chr&gt;, Snow_cover &lt;dbl&gt;, Water_cover &lt;dbl&gt;, Land_cover &lt;dbl&gt;,
 #   Total_cover &lt;chr&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Land_cover <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="co"># negative number? less than 0? </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Land_cover <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="co"># negative number? less than 0? </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 11
   Site   Year Date  Plot  Location Snow_cover Water_cover Land_cover Total_cover
   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;      
-1 barr   2011 31-M… brw3  d10             200           0       -100 100        
+1 barr   2011 31-M… brw3  d10              NA           0       -100 100        
 2 barr   2011 8-Ju… brw5  l4               45          NA       -298 100        
 # ℹ 2 more variables: Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p>We have two value in Land_cover that are &lt; 0 (-100 and -298). Let’s make them NA</p>
+<p>We have two values in Land_cover that are &lt; 0 (-100 and -298). We have no &gt;100 values. Let’s make the negative values = NA</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">ifelse</span>(Land_cover <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="cn">NA</span>, Land_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Land_cover =</span> <span class="fu">ifelse</span>(Land_cover <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="cn">NA</span>, Land_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s take one final look at Land_cover and Water_cover’s data type</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(snowsurvey_fixed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(snowsurvey_fixed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 42,830
 Columns: 11
@@ -322,41 +362,41 @@ $ Observer    &lt;chr&gt; "adoll", "adoll", "adoll", "adoll", "adoll", "adoll", 
 $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</code></pre>
 </div>
 </div>
-<p>Yay. Now all 3 x_cover columns are <dbl>s</dbl></p>
+<p>Yay. Now all 3 x_cover columns are numeric</p>
 <section id="now-that-we-have-numeric-columns-lets-recompute-and-infer-values-for-total_cover" class="level3">
 <h3 class="anchored" data-anchor-id="now-that-we-have-numeric-columns-lets-recompute-and-infer-values-for-total_cover">Now that we have numeric columns, let’s recompute and infer values for Total_cover</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we will check each column for missing values  </span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 796 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we will check each column for missing values  </span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 798 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
   &lt;int&gt;
-1   796</code></pre>
+1   798</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Water_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 768 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Water_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 768 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
   &lt;int&gt;
 1   768</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 774 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 774 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
   &lt;int&gt;
 1   774</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Total_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 81 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Total_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 81 missing </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
@@ -366,7 +406,7 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>Since Snow_cover + Land_cover + Water_cover = Total_cover, we will use the columns to infer missing values. First, let’s make sure Total_cover is numeric/doesn’t have any problematic values.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "100"                                                  
  [2] NA                                                     
@@ -411,16 +451,16 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>We have to clean it up. Let’s replace invalid entries with NAs.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">case_when</span>(</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"n/a"</span>,<span class="st">"-"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Total_cover, <span class="st">"&lt;row"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Total_cover)</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">case_when</span>(</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"."</span>,<span class="st">"n/a"</span>,<span class="st">"-"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Total_cover, <span class="st">"&lt;row"</span>) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Total_cover)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check again.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "100" NA    "85"  "110" "105" "95"  "0"   "25"  "15"  "40"  "30"  "50" 
 [13] "10"  "20"  "35"  "5"   "60"  "1"   "90"  "80"  "70"  "120" "102" "55" 
@@ -429,16 +469,16 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>All good now, but we have values &gt; 100. Let’s convert to numeric and set these to NA.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">as.numeric</span>(Total_cover)) <span class="sc">%&gt;%</span> </span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">case_when</span>(</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="cn">NA</span>, <span class="co"># checking for negative values as well</span></span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&gt;</span> <span class="dv">100</span> <span class="sc">~</span> <span class="cn">NA</span>, </span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Total_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">as.numeric</span>(Total_cover)) <span class="sc">%&gt;%</span> </span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">case_when</span>(</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="cn">NA</span>, <span class="co"># checking for negative values as well</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&gt;</span> <span class="dv">100</span> <span class="sc">~</span> <span class="cn">NA</span>, </span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Total_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check if Total_cover is now ready for infering</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(snowsurvey_fixed<span class="sc">$</span>Total_cover)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] 100  NA  85  95   0  25  15  40  30  50  10  20  35   5  60   1  90  80  70
 [20]  55  75  65   9   6   3  98  88  93  87</code></pre>
@@ -446,9 +486,9 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>It’s ready! Now to infer …</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 712 rows have no cover data, so we will not be able to infer those</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 712 rows have no cover data, so we will not be able to infer those</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
@@ -458,44 +498,43 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <p>We can only infer if at least 3 of the 4 “cover” columns have valid entries (aka are not NAs).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Snow_cover missing values</span></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Snow_cover =</span> <span class="fu">ifelse</span>( <span class="co"># use ifelse statements to ensure enough cols have values to infer from</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover),</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Water_cover <span class="sc">-</span> Land_cover, <span class="co"># infer if other 3 cols are not empty</span></span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>      Snow_cover <span class="co"># leave value as is if conditions not met</span></span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Land_cover missing values </span></span>
-<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Land_cover =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover), </span>
-<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Water_cover <span class="sc">-</span> Snow_cover,</span>
-<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>      Land_cover</span>
-<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Water_cover missing values</span></span>
-<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">Water_cover =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover), </span>
-<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Land_cover <span class="sc">-</span> Snow_cover,</span>
-<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a>      Water_cover</span>
-<span id="cb50-22"><a href="#cb50-22" aria-hidden="true" tabindex="-1"></a>    ), </span>
-<span id="cb50-23"><a href="#cb50-23" aria-hidden="true" tabindex="-1"></a>       </span>
-<span id="cb50-24"><a href="#cb50-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Water_cover missing values</span></span>
-<span id="cb50-25"><a href="#cb50-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">Total_cover =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb50-26"><a href="#cb50-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Total_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover), </span>
-<span id="cb50-27"><a href="#cb50-27" aria-hidden="true" tabindex="-1"></a>      Water_cover <span class="sc">+</span> Land_cover <span class="sc">+</span> Snow_cover,</span>
-<span id="cb50-28"><a href="#cb50-28" aria-hidden="true" tabindex="-1"></a>      Total_cover</span>
-<span id="cb50-29"><a href="#cb50-29" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb50-30"><a href="#cb50-30" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Snow_cover missing values</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Snow_cover =</span> <span class="fu">ifelse</span>( <span class="co"># use ifelse statements to ensure enough cols have values to infer from</span></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover),</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Water_cover <span class="sc">-</span> Land_cover, <span class="co"># infer if other 3 cols are not empty</span></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>      Snow_cover <span class="co"># leave value as is if conditions not met</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Land_cover missing values </span></span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Land_cover =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover), </span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Water_cover <span class="sc">-</span> Snow_cover,</span>
+<span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a>      Land_cover</span>
+<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb56-16"><a href="#cb56-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb56-17"><a href="#cb56-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># infer Water_cover missing values</span></span>
+<span id="cb56-18"><a href="#cb56-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">Water_cover =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb56-19"><a href="#cb56-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Total_cover), </span>
+<span id="cb56-20"><a href="#cb56-20" aria-hidden="true" tabindex="-1"></a>      Total_cover <span class="sc">-</span> Land_cover <span class="sc">-</span> Snow_cover,</span>
+<span id="cb56-21"><a href="#cb56-21" aria-hidden="true" tabindex="-1"></a>      Water_cover</span>
+<span id="cb56-22"><a href="#cb56-22" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb56-23"><a href="#cb56-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb56-24"><a href="#cb56-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">Total_cover =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb56-25"><a href="#cb56-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(Total_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Land_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(Water_cover), </span>
+<span id="cb56-26"><a href="#cb56-26" aria-hidden="true" tabindex="-1"></a>      Water_cover <span class="sc">+</span> Land_cover <span class="sc">+</span> Snow_cover,</span>
+<span id="cb56-27"><a href="#cb56-27" aria-hidden="true" tabindex="-1"></a>      Total_cover</span>
+<span id="cb56-28"><a href="#cb56-28" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb56-29"><a href="#cb56-29" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Lastly, I’d like to check that we did not end up with 1) more missing columns than before we inferred and 2) we do not have any values &gt; 100 in our columns of interest</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># did we create NAs? </span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 712 rows have no cover data, the number did not change after inference, that is good.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># did we create NAs? </span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Snow_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Water_cover) <span class="sc">&amp;</span> <span class="fu">is.na</span>(Land_cover)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="co"># 712 rows have no cover data, the number did not change after inference, that is good.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
       n
@@ -504,37 +543,61 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># do we have columns where percentage is &gt;100? </span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    Snow_cover <span class="sc">&gt;</span> <span class="dv">100</span>,</span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">&gt;</span> <span class="dv">100</span>,</span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">&gt;</span> <span class="dv">100</span>,</span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&gt;</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># do we have columns where percentage is &gt;100? </span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>    Snow_cover <span class="sc">&gt;</span> <span class="dv">100</span> <span class="sc">|</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">&gt;</span> <span class="dv">100</span> <span class="sc">|</span></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">&gt;</span> <span class="dv">100</span> <span class="sc">|</span></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&gt;</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 0 × 11
-# ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
-#   Location &lt;chr&gt;, Snow_cover &lt;dbl&gt;, Water_cover &lt;dbl&gt;, Land_cover &lt;dbl&gt;,
-#   Total_cover &lt;dbl&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
+<pre><code># A tibble: 21 × 11
+   Site   Year Date      Plot  Location Snow_cover Water_cover Land_cover
+   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
+ 1 cari   2011 11-Jun-11 5b    19               35          30         45
+ 2 cari   2011 11-Jun-11 5b    21                5          55         45
+ 3 cari   2011 11-Jun-11 5b    22               10          30         70
+ 4 prba   2011 7-Jun-11  9     35               20          40         50
+ 5 prba   2011 14-Jun-11 5     4                 5          15         85
+ 6 barr   2014 8-Jun-14  brw0  f12              75           0         30
+ 7 barr   2014 8-Jun-14  brw0  h4               75           5         25
+ 8 barr   2014 4-Jun-14  brw2  d8               65           0         45
+ 9 barr   2014 6-Jun-14  brw2  b2               65           0         45
+10 barr   2014 6-Jun-14  brw2  h8               65           0         45
+# ℹ 11 more rows
+# ℹ 3 more variables: Total_cover &lt;dbl&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p>We do not have any entries &gt; 100!</p>
+<p>We have 21 rows where Total_cover &gt; 100! These values are not reliable. Let’s set these to NA</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># do we have columns with negative numbers (&lt;0)? </span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    Snow_cover <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">ifelse</span>(Total_cover <span class="sc">&gt;</span> <span class="dv">100</span>, <span class="cn">NA</span>, Total_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>What about negative numbers?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># do we have columns with negative numbers (&lt;0)? </span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="sc">%&gt;%</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>    Snow_cover <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">|</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>    Water_cover <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">|</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>    Land_cover <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">|</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>    Total_cover <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 0 × 11
 # ℹ 11 variables: Site &lt;chr&gt;, Year &lt;dbl&gt;, Date &lt;chr&gt;, Plot &lt;chr&gt;,
 #   Location &lt;chr&gt;, Snow_cover &lt;dbl&gt;, Water_cover &lt;dbl&gt;, Land_cover &lt;dbl&gt;,
 #   Total_cover &lt;dbl&gt;, Observer &lt;chr&gt;, Notes &lt;chr&gt;</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No! all good.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We do not have any negative numbers either!</p>
+<p>We do not have any negative numbers either! Let’s write our snowcover_fixed to a csv file</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check if the folder exists</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(datadir_processed, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="co"># write the file</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(snowsurvey_fixed, <span class="fu">file.path</span>(datadir_processed, <span class="st">"snow_cover.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 </section>
 
