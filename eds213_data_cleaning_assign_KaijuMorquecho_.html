@@ -569,6 +569,7 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 </div>
 <p>We have 21 rows where Total_cover &gt; 100! These values are not reliable. Let’s set these to NA</p>
+<p>Note: here I am making the assumption that these are data entry errors, rather than errors as a result of my inferencing. My hope is that I eliminated or reduced inference errors as much as possible with all my checks used above.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>snowsurvey_fixed <span class="ot">&lt;-</span> snowsurvey_fixed <span class="sc">%&gt;%</span> </span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_cover =</span> <span class="fu">ifelse</span>(Total_cover <span class="sc">&gt;</span> <span class="dv">100</span>, <span class="cn">NA</span>, Total_cover))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -590,13 +591,13 @@ $ Notes       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 </div>
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No! all good.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We do not have any negative numbers either! Let’s write our snowcover_fixed to a csv file</p>
+<p>We do not have any negative numbers either! Let’s write our all_cover_fixed csv file</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check if the folder exists</span></span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(datadir_processed, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="co"># write the file</span></span>
-<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(snowsurvey_fixed, <span class="fu">file.path</span>(datadir_processed, <span class="st">"snow_cover.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(snowsurvey_fixed, <span class="fu">file.path</span>(datadir_processed, <span class="st">"all_cover_fixed_KaijuMorquecho.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

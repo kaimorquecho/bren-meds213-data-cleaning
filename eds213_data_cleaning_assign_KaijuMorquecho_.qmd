@@ -304,6 +304,8 @@ snowsurvey_fixed %>%
 ```
 
 We have 21 rows where Total_cover > 100! These values are not reliable. Let's set these to NA
+
+Note: here I am making the assumption that these are data entry errors, rather than errors as a result of my inferencing. My hope is that I eliminated or reduced inference errors as much as possible with all my checks used above. 
 ```{r}
 snowsurvey_fixed <- snowsurvey_fixed %>% 
   mutate(Total_cover = ifelse(Total_cover > 100, NA, Total_cover))
@@ -324,14 +326,14 @@ snowsurvey_fixed %>%
 
 ```
 
-We do not have any negative numbers either! Let's write our snowcover_fixed to a csv file
+We do not have any negative numbers either! Let's write our all_cover_fixed csv file
 
 ```{r}
 # check if the folder exists
 dir.create(datadir_processed, showWarnings = FALSE)
 
 # write the file
-write_csv(snowsurvey_fixed, file.path(datadir_processed, "snow_cover.csv"))
+write_csv(snowsurvey_fixed, file.path(datadir_processed, "all_cover_fixed_KaijuMorquecho.csv"))
 ```
 
 
